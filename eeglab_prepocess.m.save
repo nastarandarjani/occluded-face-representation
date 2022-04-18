@@ -1,0 +1,56 @@
+function eeglab_prepocess(i)
+sub = ['sub', num2str(i)];
+
+data = load(['../data/merged/', sub, '.mat'], 'data');
+
+sub = ['sub', num2str(i)];
+
+data = load(['../data/merged/', sub, '.mat'], 'data');
+
+trigger = data(129, :);
+data = data - data(63, :);
+data(63:64, :) = [];
+data(127, :) = trigger;
+
+eeglab
+EEG.etc.eeglabvers = '2021.1';
+% import data
+EEG = pop_importdata('dataformat','array','nbchan',0,'data','data', ...
+    'setname',sub,'srate',1200,'subject',num2str(i),'pnts',0,'xmin',0);
+EEG = eeg_checkset( EEG );
+
+% import data event
+EEG = pop_chanevent(EEG, 127,'edge','leading','edgelen',0);
+EEG = eeg_checkset( EEG );
+
+% import channel locations
+EEG=pop_chanedit(EEG, 'load', ...
+    {'/home/nastaran/Desktop/codes/location_xyz.txt', ...
+    'filetype','xyz'});
+EEG = eeg_checkset( EEG );
+
+% re-reference to average
+EEG = pop_reref( EEG, [] );
+EEG = eeg_checkset( EEG );
+
+% high pass filter
+EEG = pop_eegfiltnew(EEG, 1, []);
+EEG = eeg_checkset( EEG );
+
+% low pass filter
+EEG = pop_eegfiltnew(EEG, [], 100);
+EEG = eeg_checkset( EEG );
+
+% re-reference to average
+EEG = pop_reref( EEG, [] );
+EEG = eeg_checkset( EEG );
+
+% % downsample
+% EEG = pop_resample(EEG, 250);
+% EEG = eeg_checkset(EEG);
+
+% save dataset
+EEG = pop_saveset( EEG, 'filename',[sub, '.set'],'filepath', ...
+    '/home/nastaran/Desktop/data/preprocessed/mvpa_preprocessing/');
+EEG = eeg_checkset( EEG );
+end
