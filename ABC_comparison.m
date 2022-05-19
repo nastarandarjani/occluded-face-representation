@@ -1,34 +1,6 @@
 function ABC_comparison(C, S1, S2)
 % ABC_comparison computes channel-wise decoding and plots decodings ...
 % topoplots 
-% uses mvpa_light toolbox from fieldtrip extension to
-% classify over time and channels.
-% Classifier: multiclass-lda will be chosen For multiclass problems, and 
-% simple lda chose for 2-class problems.
-% Metric: Cohen's kappa coefficient, f1 score, accuracy
-% Cross Validation: 10-fold CV with 5 repetition
-% time decoding, channel decoding (with triangulation), channel and time
-% decoding and time*time decoding applies and saves in corresponding .mat
-% file.
-%
-% input arguments:
-%   - subject: dataset of corresponding subject
-%   - cond: 5 type of labeling can be choose to feed classifier (SEE BELOW)
-%
-% labeling option (cond):
-%   1. Whether it is (unoccluded) face or not (either meaningfull or not).
-%           x_x_n_1 => 1, (ix_x_x_x) or (ir_16_x_x) => 0
-%   2. Whose face it is.
-%           id_i_x_x => i-1, ir_i_x_x (except i=16) => i-6
-%   3. The occluder in occluded face is meaningfull or not.
-%           x_i_n_j (except i=16 or j=1) => 1, x_x_location_x => 0
-%   4. type of occluder (either meaningfull or not).
-%           x_x_n_i => i-1, id_x_x_x_texture => i+7
-%   5. Location of occluder in face.
-%           x_x_location_i => i
-%
-% Written by Nastaran Darjani
-% Developed in MATLAB R2017a
 % 
 
     startup_MVPA_Light

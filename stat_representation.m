@@ -23,10 +23,14 @@ function stat_representation(path, analyse, isNormalize, compare, region)
     if strcmp(compare(1), compare(2))
         save_name = [char(compare(1)), '_', char(region(1)), ...
                     ' vs ', char(region(2))];
+        r = ["", ""];
+        group = region;
     else
         save_name = [char(compare(1)), ' vs ', char(compare(2))];
+        r = strcat(["_", "_"], region);
+        group = compare;
     end
-        
+            
     % add '_' to not empty elements of region array
     for i=1:2
         if ~ strcmp(region(i), "")
@@ -49,13 +53,13 @@ function stat_representation(path, analyse, isNormalize, compare, region)
             results_occluder{sub} = data.mvpa;
         end
 
-        res = mv_combine_results(results_occluded, 'average');
-        occluded = mv_select_result(res, 'kappa');
-        occluded.name = 'occluded';
+        res = mv_select_result(results_occluded, 'kappa');
+        occluded = mv_combine_results(res, 'average');
+        occluded.name = char(group(1));
 
-        res = mv_combine_results(results_occluder, 'average');
-        occluder = mv_select_result(res, 'kappa');
-        occluder.name = 'occluder';
+        res = mv_select_result(results_occluder, 'kappa');
+        occluder = mv_combine_results(res, 'average');
+        occluder.name = char(group(2));
         combine = mv_combine_results({occluded, occluder}, 'merge');
 
         cfg = [];
@@ -71,9 +75,11 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         cfg.group = [ones(11,1); 2*ones(11,1)];
         stat = mv_statistics(cfg, all_results);
         mv_plot_result(combine, data.time, 'mask', stat.mask);
-        saveas(gcf, [path, save_name, '_when', char(region(1)), '.jpg']);
+        saveas(gcf, [path, save_name, '_when', char(r(1)), '.jpg']);
+    end
     
-    elseif strcmp(analyse, 'where') || strcmp(analyse, 'all')
+    if (strcmp(analyse, 'where') || strcmp(analyse, 'all')) && ...
+        ~any(contains(["_fr", "_temp"], region))
         
         close all;
         % load data as cell-array
@@ -90,16 +96,16 @@ function stat_representation(path, analyse, isNormalize, compare, region)
             results_occluder{sub} = data.mvpa;
         end
 
-        res = mv_combine_results(results_occluded, 'average');
-        occluded = mv_select_result(res, 'kappa');
+        res = mv_select_result(results_occluded, 'kappa');
+        occluded = mv_combine_results(res, 'average');
         occluded.name = 'occluded';
 
-        res = mv_combine_results(results_occluder, 'average');
-        occluder = mv_select_result(res, 'kappa');
+        res = mv_select_result(results_occluder, 'kappa');
+        occluder = mv_combine_results(res, 'average');
         occluder.name = 'occluder';
         % combine = mv_combine_results({occluded, occluder}, 'merge');
         combine = occluded;
-        combine.perf = occluded.perf - occluder.perf;
+        combine.perf = occluded.perf{1} - occluder.perf{1};
 
         cfg = [];
         cfg.metric = 'kappa';
@@ -132,8 +138,9 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         cfg.highlightchannel = find(stat.mask);
         ft_topoplotER(cfg, data);
         saveas(gcf, [path, save_name, '_where', char(region(1)), '.jpg']);
+    end
         
-    elseif strcmp(analyse, 'time') || strcmp(analyse, 'all')
+    if strcmp(analyse, 'time') || strcmp(analyse, 'all')
         
         close all;
         % load data as cell-array
@@ -143,22 +150,20 @@ function stat_representation(path, analyse, isNormalize, compare, region)
             data = load([path, 'sub', num2str(sub), '_', ...
                 char(compare(1)), '_time', char(region(1)),'.mat']);
             data = data.stat;
-            results_occluded{sub} = data.mvpa;
+            results_occluded{sub} = mv_select_result(data.mvpa, 'kappa');
             data = load([path, 'sub', num2str(sub),  '_', ...
                 char(compare(2)), '_time', char(region(2)),'.mat']);
             data = data.stat;
-            results_occluder{sub} = data.mvpa;
+            results_occluder{sub}=mv_select_result(data.mvpa, 'kappa');
         end
 
-        res = mv_combine_results(results_occluded, 'average');
-        occluded = mv_select_result(res, 'kappa');
-        occluded.name = 'occluded';
+        occluded = mv_combine_results(results_occluded, 'average');
+        occluded.name = char(group(1));
 
-        res = mv_combine_results(results_occluder, 'average');
-        occluder = mv_select_result(res, 'kappa');
-        occluder.name = 'occluder';
+        occluder = mv_combine_results(results_occluder, 'average');
+        occluder.name = char(group(2));
         combine = occluded;
-        combine.perf = occluded.perf - occluder.perf;
+        combine.perf = occluded.perf{1} - occluder.perf{1};
         
         if (isNormalize)
             combine.perf = CDF_(combine.perf);
@@ -185,9 +190,6 @@ function stat_representation(path, analyse, isNormalize, compare, region)
             plot(boundary(:,2), boundary(:,1), 'k', 'linewidth', 1)
         end
         hold off
-        saveas(gcf, [path, save_name, '_time', char(region(1)), '.jpg']);
-        
-    else
-        fprintf('invalid analyse argument.\n');
+        saveas(gcf, [path, save_name, '_time', char(r(1)), '.jpg']);
     end
 end

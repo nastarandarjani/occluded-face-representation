@@ -71,7 +71,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
             mv_plot_result(result_average, time, 'mask', ...
                 stat.mask(1,:));
             save([path, char(cond_list(cond)), '_when', ...
-                char(region), '.mat'], 'result_average', 'stat');
+                char(region), '.mat'], 'result_average', stat);
    
             res = mv_select_result(results, 'accuracy');
             result_average = mv_combine_results(res, 'average');
@@ -149,7 +149,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
                 end
                 ft_topoplotER(cfg, model);
                 save([path, char(cond_list(cond)), '_where', ...
-                    char(region), '.mat'], 'model', 'stat');
+                    char(region), '.mat'], model, stat);
 
                 res = mv_select_result(results, 'accuracy');
                 result_average = mv_combine_results(res, 'average');
@@ -235,7 +235,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
             end
             hold off
             save([path, char(cond_list(cond)), '_time', ...
-                char(region), '.mat'], 'result_average', 'stat');
+                char(region), '.mat'], result_average, stat);
 
             res = mv_select_result(results, 'accuracy');
             result_average = mv_combine_results(res, 'average');

@@ -18,7 +18,8 @@ function glm_run()
 %     
 %         label_mat = split(label_mat, '.');
 %         label_mat = cellstr(label_mat(:, 1));
-%         label_mat = cellfun(@(x)strsplit(x, '_'), label_mat, 'UniformOutput', ...
+%         label_mat = cellfun(@(x)strsplit(x, '_'), label_mat, ...
+%               'UniformOutput', ...
 %             false);
 %         label = cellfun(@(v)v(1:4), label_mat, 'UniformOutput', false);
 %         label = vertcat(label{:});
@@ -67,7 +68,7 @@ function glm_run()
     tbl = nan([1620*11, 2+1]);
     channel = nan([126, 206, 1620*11]);
     for sub=1:11
-        fprintf(['\nloading subject: ', num2str(sub)]);
+        fprintf(['loading subject: ', num2str(sub), '\n']);
         label_mat = load(['../data/label/sub', num2str(sub), '.mat']);
         label_mat = label_mat.imageseq;
 
@@ -101,6 +102,21 @@ function glm_run()
         data = ft_selectdata(cfg, data);
         task(isnan(task(:, 1)), :) = [];
         
+        
+        % average in 50ms time window
+        win = 13;
+        for tr = 1:numel(data.trial)
+            x = data.trial{tr};
+            T = ones(length(x));
+            T = T - triu(T, floor(win./2)+1) - ...
+                tril(T, -floor(win./2)-1) > 0;
+            for in = 1:size(x, 1)
+                m = repmat(x(in, :), size(x, 2), 1);
+                x(in, :) = sum(T.* m, 2);
+            end
+            data.trial{tr} = x ./ win;
+        end
+        
         tbl(1620*(sub-1)+1:1620*sub, :) = [task, ones([1620, 1])*sub];
         
         channel( :, :, 1620*(sub-1)+1:1620*sub) = ...
@@ -108,7 +124,7 @@ function glm_run()
     end
     
     tbl = array2table(tbl);
-    clear task label_mat data;
+    clear task label_mat data x;
     for ch = 1:126
         glme = cell(206, 1);
         fprintf(['\ncalculating glme for channel: ', num2str(ch)]);
