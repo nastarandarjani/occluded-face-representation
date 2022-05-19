@@ -13,28 +13,18 @@ function stat_mvpa(path, analyse, isNormalize, region)
 % Written by Nastaran Darjani
 % Developed in MATLAB R2017a
     
-    %cond_list = ["occluded", "occluder"]; 
-    cond_list = ["v1", "v2", "v4"];
+    cond_list = ["occluded", "occluder"]; 
+    %cond_list = ["v1", "v2", "v4"];
     %["isFace", "identity", "meaningfulness", "type", "location"];
     
     startup_MVPA_Light
     
+    model = load(['../data/preprocessed/downsampled_data/sub1.mat']);
+    model = model.data;
+    
     if ~ strcmp(region, "")
     	region = string(['_', char(region)]);
-    end
-    
-    if contains(path, 'test_train_')
-        p = split(path, '/');
-        time = fullfile(p{1: length(p)-1}, '/');
-        model = load([time, 'sub1_occluded_where.mat']);
-        model = model.stat;
-        time = load([time, 'sub1_occluded_when.mat']);
-        time = time.stat.time;
-    else
-        time = load([path, 'sub1_occluded_when.mat']);
-        time = time.stat.time;
-    end
-        
+    end        
     
     for cond = 1:length(cond_list)
         close all;
@@ -45,14 +35,9 @@ function stat_mvpa(path, analyse, isNormalize, region)
             for sub = 1:11
                 data = load([path, 'sub', num2str(sub), '_', ...
                     char(cond_list(cond)), '_when', char(region), '.mat']);
-                if contains(path, 'test_train_')
-                    results{sub} = data.result;
-                    data.mvpa = data.result;
-                else
-                    data = data.stat;
-                    results{sub} = data.mvpa;
-                end
+                results{sub} = data.result;
             end
+            time = data.time;
         
             res = mv_select_result(results, 'kappa');
             result_average = mv_combine_results(res, 'average');
@@ -68,10 +53,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
             cfg.statistic = 'wilcoxon';
             cfg.null = 0; 
             stat = mv_statistics(cfg, res);
-            mv_plot_result(result_average, time, 'mask', ...
-                stat.mask(1,:));
-            save([path, char(cond_list(cond)), '_when', ...
-                char(region), '.mat'], 'result_average', 'stat');
+            mv_plot_result(result_average, time, 'mask', stat.mask(1,:));
    
             res = mv_select_result(results, 'accuracy');
             result_average = mv_combine_results(res, 'average');
@@ -85,15 +67,14 @@ function stat_mvpa(path, analyse, isNormalize, region)
             cfg.design = 'within';
             cfg.statistic = 'wilcoxon';
             cfg.clustercritval  = 1.96;
-            cfg.null = (1 / data.mvpa.n_classes); % random classifier
+            cfg.null = (1 / data.result.n_classes); % random classifier
             stat = mv_statistics(cfg, res);
-            mv_plot_result(result_average, time, 'mask', ...
-                stat.mask(1, :));
+            mv_plot_result(result_average, time, 'mask', stat.mask(1, :));
         
             figHandles = findall(0,'Type','figure');
-            saveas(figHandles(2), [path, char(cond_list(cond)), ...
-                '_when_acc', char(region), '.jpg']);
             saveas(figHandles(1), [path, char(cond_list(cond)), ...
+                '_when_acc', char(region), '.jpg']);
+            saveas(figHandles(2), [path, char(cond_list(cond)), ...
                 '_when_kappa', char(region), '.jpg']);
         end
     end
@@ -109,15 +90,9 @@ function stat_mvpa(path, analyse, isNormalize, region)
                     data = load([path, 'sub', num2str(sub), '_', ...
                         char(cond_list(cond)), '_where', char(region),...
                         '.mat']);
-                    if contains(path, 'test_train_')
-                        results{sub} = data.result;
-                        data.mvpa = data.result;
-                    else
-                        model = data.stat;
-                        data = data.stat;
-                        results{sub} = model.mvpa;
-                    end
+                    results{sub} = data.result;
                 end
+                
                 model.elec.coordsys = 'eeglab';
                 cfg = [];
                 cfg.elec = model.elec;   
@@ -148,8 +123,6 @@ function stat_mvpa(path, analyse, isNormalize, region)
                     model.kappa = result_average.perf{1};
                 end
                 ft_topoplotER(cfg, model);
-                save([path, char(cond_list(cond)), '_where', ...
-                    char(region), '.mat'], 'model', 'stat');
 
                 res = mv_select_result(results, 'accuracy');
                 result_average = mv_combine_results(res, 'average');
@@ -179,9 +152,9 @@ function stat_mvpa(path, analyse, isNormalize, region)
                 ft_topoplotER(cfg, model);
 
                 figHandles = findall(0,'Type','figure');
-                saveas(figHandles(2), [path, char(cond_list(cond)), ...
-                    '_where_acc', char(region), '.jpg']);
                 saveas(figHandles(1), [path, char(cond_list(cond)), ...
+                    '_where_acc', char(region), '.jpg']);
+                saveas(figHandles(2), [path, char(cond_list(cond)), ...
                     '_where_kappa', char(region), '.jpg']);
 
             else
@@ -198,14 +171,9 @@ function stat_mvpa(path, analyse, isNormalize, region)
             for sub = 1:11
                 data = load([path, 'sub', num2str(sub), '_', ...
                     char(cond_list(cond)), '_time', char(region), '.mat']);
-                if contains(path, 'test_train_')
-                    results{sub} = data.result;
-                    data.mvpa = data.result;
-                else
-                    data = data.stat;
-                    results{sub} = data.mvpa;
-                end
+                results{sub} = data.result;
             end
+            time = data.time;
 
             res = mv_select_result(results, 'kappa');
             result_average = mv_combine_results(res, 'average');
@@ -234,8 +202,6 @@ function stat_mvpa(path, analyse, isNormalize, region)
                 plot(boundary(:,2), boundary(:,1), 'k', 'linewidth', 1)
             end
             hold off
-            save([path, char(cond_list(cond)), '_time', ...
-                char(region), '.mat'], 'result_average', 'stat');
 
             res = mv_select_result(results, 'accuracy');
             result_average = mv_combine_results(res, 'average');
@@ -249,7 +215,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
             cfg.design = 'within';
             cfg.statistic = 'wilcoxon';
             cfg.clustercritval  = 1.96;
-            cfg.null = (1 / data.mvpa.n_classes); % random classifier
+            cfg.null = (1 / data.result.n_classes); % random classifier
             stat = mv_statistics(cfg, res);
             if (isNormalize)
                 result_average.perf = CDF_(result_average.perf{1});
@@ -266,9 +232,9 @@ function stat_mvpa(path, analyse, isNormalize, region)
             hold off
 
             figHandles = findall(0,'Type','figure');
-            saveas(figHandles(2), [path, char(cond_list(cond)), ...
-                '_time_acc', char(region), '.jpg']);
             saveas(figHandles(1), [path, char(cond_list(cond)), ...
+                '_time_acc', char(region), '.jpg']);
+            saveas(figHandles(2), [path, char(cond_list(cond)), ...
                 '_time_kappa', char(region), '.jpg']);
         end
     end
