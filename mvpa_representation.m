@@ -16,10 +16,7 @@ function mvpa_representation(subject, analyse, region)
         '.mat']);
     data = data.data;
     label_mat = load(['../data/label/', subject, '.mat']);
-    label_mat = label_mat.imageseq;
-    
-    [C,ia,ic] = unique(imageseq);
-    
+    label_mat = label_mat.imageseq;    
     
     % task(:, 1) = occluded representation
     % task(:, 2) = occluder representation
@@ -101,8 +98,9 @@ function mvpa_representation(subject, analyse, region)
             save(['../data/result/mvpa/representation/', subject, '_', ...
                 char(cond(i)), '_when', char(region), '.mat'], ...
                 'stat', '-v7.3');
+        end
             
-        elseif strcmp(analyse, 'where') || strcmp(analyse, 'all')
+        if strcmp(analyse, 'where') || strcmp(analyse, 'all')
             cfg = [];
             cfg.method = 'mvpa';
             cfg.latency = [0.1, 0.3];
@@ -119,8 +117,9 @@ function mvpa_representation(subject, analyse, region)
             save(['../data/result/mvpa/representation/', subject, '_', ...
                 char(cond(i)), '_where', char(region), '.mat'], ...
                 'stat', '-v7.3');
+        end
             
-        elseif strcmp(analyse, 'time') || strcmp(analyse, 'all')
+        if strcmp(analyse, 'time') || strcmp(analyse, 'all')
             cfg = [] ;  
             cfg.method = 'mvpa';
             cfg.mvpa.classifier = classifier;
@@ -135,8 +134,6 @@ function mvpa_representation(subject, analyse, region)
             save(['../data/result/mvpa/representation/', subject, '_', ...
                  char(cond(i)), '_time', char(region), '.mat'], ...
                  'stat', '-v7.3');
-        else
-            fprintf('invalid analyse argument.\n');
         end
     end
 end
