@@ -35,12 +35,13 @@ function stat_mvpa(path, analyse, isNormalize, region)
             for sub = 1:11
                 data = load([path, 'sub', num2str(sub), '_', ...
                     char(cond_list(cond)), '_when', char(region), '.mat']);
-                results{sub} = data.result;
+                results{sub} = data.res;
             end
             time = data.time;
         
             res = mv_select_result(results, 'kappa');
             result_average = mv_combine_results(res, 'average');
+            result_average.perf_std = result_average.perf_std{1}/sqrt(11);
 
             cfg = [];
             cfg.metric = 'kappa';
@@ -57,6 +58,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
    
             res = mv_select_result(results, 'accuracy');
             result_average = mv_combine_results(res, 'average');
+            result_average.perf_std = result_average.perf_std{1}/sqrt(11);
         
             cfg = [];
             cfg.metric = 'accuracy';
@@ -67,7 +69,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
             cfg.design = 'within';
             cfg.statistic = 'wilcoxon';
             cfg.clustercritval  = 1.96;
-            cfg.null = (1 / data.result.n_classes); % random classifier
+            cfg.null = (1 / data.res.n_classes); % random classifier
             stat = mv_statistics(cfg, res);
             mv_plot_result(result_average, time, 'mask', stat.mask(1, :));
         
@@ -90,7 +92,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
                     data = load([path, 'sub', num2str(sub), '_', ...
                         char(cond_list(cond)), '_where', char(region),...
                         '.mat']);
-                    results{sub} = data.result;
+                    results{sub} = data.res;
                 end
                 
                 model.elec.coordsys = 'eeglab';
@@ -100,6 +102,8 @@ function stat_mvpa(path, analyse, isNormalize, region)
 
                 res = mv_select_result(results, 'kappa');
                 result_average = mv_combine_results(res, 'average');
+                result_average.perf_std = ...
+                    result_average.perf_std{1}/sqrt(11);
 
                 cfg = [];
                 cfg.metric = 'kappa';
@@ -171,7 +175,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
             for sub = 1:11
                 data = load([path, 'sub', num2str(sub), '_', ...
                     char(cond_list(cond)), '_time', char(region), '.mat']);
-                results{sub} = data.result;
+                results{sub} = data.res;
             end
             time = data.time;
 
@@ -215,7 +219,7 @@ function stat_mvpa(path, analyse, isNormalize, region)
             cfg.design = 'within';
             cfg.statistic = 'wilcoxon';
             cfg.clustercritval  = 1.96;
-            cfg.null = (1 / data.result.n_classes); % random classifier
+            cfg.null = (1 / data.res.n_classes); % random classifier
             stat = mv_statistics(cfg, res);
             if (isNormalize)
                 result_average.perf = CDF_(result_average.perf{1});
