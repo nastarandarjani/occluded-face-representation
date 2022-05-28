@@ -6,6 +6,11 @@ function stat_representation(path, analyse, isNormalize, compare, region)
     startup_MVPA_Light
     close all;
     
+    model = load(['../data/preprocessed/downsampled_data/sub1.mat']);
+    model = model.data;
+    model = rmfield(model, 'trial');
+    model.time = 0.2;
+    
     % sanity check of compare and region arguments
     if strcmp(compare(1), compare(2))
         if strcmp(region(1), region(2))
@@ -45,13 +50,12 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         for sub = 1:11
             data = load([path, 'sub', num2str(sub), '_', ...
                     char(compare(1)), '_when', char(region(1)),'.mat']);
-            data = data.stat;
-            results_occluded{sub} = data.mvpa;
+            results_occluded{sub} = data.res;
             data = load([path, 'sub', num2str(sub),  '_', ...
                 char(compare(2)), '_when', char(region(2)),'.mat']);
-            data = data.stat;
-            results_occluder{sub} = data.mvpa;
+            results_occluder{sub} = data.res;
         end
+        time = data.time;
 
         res = mv_select_result(results_occluded, 'kappa');
         occluded = mv_combine_results(res, 'average');
@@ -61,6 +65,7 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         occluder = mv_combine_results(res, 'average');
         occluder.name = char(group(2));
         combine = mv_combine_results({occluded, occluder}, 'merge');
+        combine.perf_std = combine.perf_std{1}/sqrt(11);
 
         cfg = [];
         cfg.metric = 'kappa';
@@ -74,12 +79,12 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         all_results = [results_occluded; results_occluder];
         cfg.group = [ones(11,1); 2*ones(11,1)];
         stat = mv_statistics(cfg, all_results);
-        mv_plot_result(combine, data.time, 'mask', stat.mask);
+        mv_plot_result(combine, time, 'mask', stat.mask);
         saveas(gcf, [path, save_name, '_when', char(r(1)), '.jpg']);
     end
     
     if (strcmp(analyse, 'where') || strcmp(analyse, 'all')) && ...
-        ~any(contains(["_fr", "_temp"], region))
+        ~any(contains(region, ["_fr", "_temp"]))
         
         close all;
         % load data as cell-array
@@ -88,12 +93,10 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         for sub = 1:11
             data = load([path, 'sub', num2str(sub),  '_', ...
                 char(compare(1)), '_where', char(region(1)),'.mat']);
-            data = data.stat;
-            results_occluded{sub} = data.mvpa;
+            results_occluded{sub} = data.res;
             data = load([path, 'sub', num2str(sub),  '_', ...
                 char(compare(2)), '_where', char(region(2)),'.mat']);
-            data = data.stat;
-            results_occluder{sub} = data.mvpa;
+            results_occluder{sub} = data.res;
         end
 
         res = mv_select_result(results_occluded, 'kappa');
@@ -119,15 +122,15 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         cfg.group = [ones(11,1); 2*ones(11,1)];
         stat = mv_statistics(cfg, all_results);
 
-        data.elec.coordsys = 'eeglab';
+        model.elec.coordsys = 'eeglab';
         cfg = [];
-        cfg.elec = data.elec;   
+        cfg.elec = model.elec;   
         layout = ft_prepare_layout(cfg);
         
         if (isNormalize)
-            data.kappa = CDF_(combine.perf);
+            model.kappa = CDF_(combine.perf);
         else
-            data.kappa = combine.perf;
+            model.kappa = combine.perf;
         end
 
         cfg = [];
@@ -136,7 +139,7 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         cfg.colorbar = 'yes';
         cfg.highlight = 'labels';
         cfg.highlightchannel = find(stat.mask);
-        ft_topoplotER(cfg, data);
+        ft_topoplotER(cfg, model);
         saveas(gcf, [path, save_name, '_where', char(region(1)), '.jpg']);
     end
         
@@ -149,13 +152,12 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         for sub = 1:11
             data = load([path, 'sub', num2str(sub), '_', ...
                 char(compare(1)), '_time', char(region(1)),'.mat']);
-            data = data.stat;
-            results_occluded{sub} = mv_select_result(data.mvpa, 'kappa');
+            results_occluded{sub} = mv_select_result(data.res, 'kappa');
             data = load([path, 'sub', num2str(sub),  '_', ...
                 char(compare(2)), '_time', char(region(2)),'.mat']);
-            data = data.stat;
-            results_occluder{sub}=mv_select_result(data.mvpa, 'kappa');
+            results_occluder{sub}=mv_select_result(data.res, 'kappa');
         end
+        time = data.time;
 
         occluded = mv_combine_results(results_occluded, 'average');
         occluded.name = char(group(1));
@@ -182,7 +184,7 @@ function stat_representation(path, analyse, isNormalize, compare, region)
         cfg.group = [ones(11,1); 2*ones(11,1)];
         stat = mv_statistics(cfg, all_results);
         
-        h = mv_plot_result(combine, data.time, data.time);
+        h = mv_plot_result(combine, time, time);
         B = bwboundaries(stat.mask);
         hold on
         for k = 1:length(B)
