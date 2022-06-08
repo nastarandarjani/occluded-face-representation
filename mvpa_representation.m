@@ -12,8 +12,8 @@ function mvpa_representation(subject, analyse, region)
     end
     
     % load data
-    data = load(['../data/preprocessed/downsampled_data/', subject, ...
-        '.mat']);
+    data = load(['../data/preprocessed/mvpa_preprocessing/ica/', ...
+            subject, '.mat']);
     data = data.data;
     label_mat = load(['../data/label/', subject, '.mat']);
     label_mat = label_mat.imageseq;
@@ -102,30 +102,10 @@ function mvpa_representation(subject, analyse, region)
         y_test = y_test(~isnan(y_test(:, 1)), :);
 
         % average in 50ms time window
-        win = 13;
-        for tr = 1:size(train_when, 1)
-            x = squeeze(train_when(tr, :, :));
-            T = ones(length(x));
-            T = T - triu(T, floor(win./2)+1) - tril(T, ...
-                -floor(win./2)-1) > 0;
-            for in = 1:size(x, 1)
-                m = repmat(x(in, :), size(x, 2), 1);
-                x(in, :) = sum(T.* m, 2);
-            end
-            train_when(tr, :, :) = x ./ win;
-        end
-        for tr = 1:size(test_when, 1)
-            x = squeeze(test_when(tr, :, :));
-            T = ones(length(x));
-            T = T - triu(T, floor(win./2)+1) - tril(T, ...
-                -floor(win./2)-1) > 0;
-            for in = 1:size(x, 1)
-                m = repmat(x(in, :), size(x, 2), 1);
-                x(in, :) = sum(T.* m, 2);
-            end
-            test_when(tr, :, :) = x ./ win;
-        end
-
+        win = 12;   % (12*1000ms)/256Hz ~= 47 ms
+        train_when = movmean(train_when, win, 3);
+        test_when = movmean(test_when, win, 3);
+        
         cond = ["occluded", "occluder"];
         for i=1:2
             % set classifier
@@ -139,7 +119,7 @@ function mvpa_representation(subject, analyse, region)
                 % across time
                 cfg = [];
                 cfg.classifier = classifier;
-                cfg.metric = {'kappa', 'f1', 'accuracy'};
+                cfg.metric = {'kappa', 'accuracy'};
                 cfg.dimension_names = {'samples', 'chan', 'time'};
                 cfg.feature_dimension = 2;
                 cfg.mvpa.preprocess = 'zscore';
