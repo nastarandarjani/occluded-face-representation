@@ -107,7 +107,7 @@ function mvpa_representation(subject, analyse, region)
         test_when = movmean(test_when, win, 3);
         
         cond = ["occluded", "occluder"];
-        for i=1:2
+        for i=1:length(cond)
             % set classifier
             if numel(unique(y_train(:, i))) == 2
                 classifier = 'lda';
@@ -156,7 +156,7 @@ function mvpa_representation(subject, analyse, region)
         end
     end
     
-    for i=1:2
+    for i=1:length(cond)
         type = ["when", "where", "time"];
         for j=1:3
             if isempty(result{1, i, j})
