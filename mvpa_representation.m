@@ -122,7 +122,7 @@ function mvpa_representation(subject, analyse, region)
                 cfg.metric = {'kappa', 'accuracy'};
                 cfg.dimension_names = {'samples', 'chan', 'time'};
                 cfg.feature_dimension = 2;
-                cfg.mvpa.preprocess = 'zscore';
+                cfg.preprocess = 'zscore';
 
                 [~, result{perm, i, 1}] = mv_classify(cfg, ...
                     train_when, y_train(:, i), test_when, y_test(:, i));
@@ -135,7 +135,7 @@ function mvpa_representation(subject, analyse, region)
                 cfg.dimension_names = {'samples', 'chan', 'time'};
                 cfg.feature_dimension = 3;
                 cfg.neighbours = neighbours;
-                cfg.mvpa.preprocess = 'zscore';
+                cfg.preprocess = 'zscore';
 
                 [~, result{perm, i, 2}] = mv_classify(cfg, ...
                     train_where, y_train(:, i), test_where, y_test(:, i));
@@ -148,7 +148,7 @@ function mvpa_representation(subject, analyse, region)
                 cfg.dimension_names = {'samples', 'chan', 'time'};
                 cfg.feature_dimension = 2;
                 cfg.generalization_dimension = 3;
-                cfg.mvpa.preprocess = 'zscore';
+                cfg.preprocess = 'zscore';
 
                 [~, result{perm, i, 3}] = mv_classify_timextime(cfg, ...
                     train_when, y_train(:, i), test_when, y_test(:, i));
