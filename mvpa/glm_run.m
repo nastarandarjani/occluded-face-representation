@@ -1,4 +1,4 @@
-function glm_run()
+function anov_run()
 % glm_run fits a Generalized mixed-effect model of amplitude = 1 + isFace 
 % + identity + meaningfulness + type + location + (1 | subject number) over
 % each time point and channel of dataset. labeling is described in mvpa_run
@@ -132,14 +132,14 @@ function glm_run()
     for ch = 70:126
         anov = cell(206, 1);
         p = cell(206, 1);
-        fprintf(['\ncalculating glme for channel: ', num2str(ch)]);
+        fprintf(['\ncalculating anova for channel: ', num2str(ch)]);
         for timepoint = 1:206
             [p{timepoint}, anov{timepoint}] = ...
                 anovan(squeeze(channel(ch, timepoint, :)), ...
                 {occluded, occluder, subject}, 'random', 3, ...
                 'varname', {'occluded', 'occluder', 'subject'});
         end
-        save(['../data/result/glm/glm', num2str(ch) ,'.mat'], 'anov', ...
+        save(['../data/result/anova/', num2str(ch) ,'.mat'], 'anov', ...
             'p','-v7.3');
     end
 end
