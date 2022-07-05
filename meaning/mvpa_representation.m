@@ -54,7 +54,7 @@ function mvpa_representation(subject, analyse, region)
     q = {[1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]};
     
     result = cell(100, 4, 3);
-    testlabel = nan(100, 4, 24);
+    testlabel = nan(100, 4, 56);
     CF = cell(100, 4);
     Xtest = cell(100, 4);
     for perm = 1:100
@@ -86,23 +86,21 @@ function mvpa_representation(subject, analyse, region)
             if strcmp(img_name(1), 'id')
                 if strcmp(img_name(3), 'n')
                     if ~strcmp(img_name(4), '1')
-                        if str2double(img_name(4)) < 5
                         y_train{i, 1} = str2double(img_name(2)) - 1;
                         y_test{i, 1} = y_train{i, 1};
-                        y_train{i, 2} = str2double(img_name(4)) - 1;
+                        y_train{i, 2} = zeros(3, 1);
+                        y_train{i, 2}(q{str2double(img_name(4)) - 1}) = 1;
                         y_test{i, 2} = y_train{i, 2};
-                        end
                     end
                 end
             elseif strcmp(img_name(1), 'ir')
                 if ~strcmp(img_name(4), '1')
                     if ~strcmp(img_name(2), '16')
-                        if str2double(img_name(4)) < 5
                         y_train{i, 1} = str2double(img_name(2)) - 6;
                         y_test{i, 1} = y_train{i, 1};
-                        y_train{i, 2} = str2double(img_name(4)) - 1;
+                        y_train{i, 2} = zeros(3, 1);
+                        y_train{i, 2}(q{str2double(img_name(4)) - 1}) = 1;
                         y_test{i, 2} = y_train{i, 2};
-                        end
                     end
                 end
             end
@@ -126,12 +124,16 @@ function mvpa_representation(subject, analyse, region)
         train_when = movmean(train_when, win, 3);
         test_when = movmean(test_when, win, 3);
         
-        Y_train = cell2mat(y_train);
+        Y_train = zeros(length(y_train), 4);
+        Y_train(:, 1) = cell2mat(y_train(:, 1));
+        Y_train(:, 2:end) = cell2mat(y_train(:, 2)')' + 1;
         
-        Y_test = cell2mat(y_test);
+        Y_test = zeros(length(y_test), 4);
+        Y_test(:, 1) = cell2mat(y_test(:, 1));
+        Y_test(:, 2:end) = cell2mat(y_test(:, 2)')' + 1;
         
-        cond = ["occluded", "occluder", "mask", "hat"];
-        for i=1:2       
+        cond = ["occluded", "glass", "mask", "hat"];
+        for i=1:length(cond)        
             % set classifier
             if numel(unique(Y_train(:, i))) == 2
                 classifier = 'lda';
@@ -143,7 +145,7 @@ function mvpa_representation(subject, analyse, region)
                 % across time
                 cfg = [];
                 cfg.classifier = classifier;
-                cfg.metric = {'kappa', 'f1'};
+                cfg.metric = 'kappa';
                 cfg.dimension_names = {'samples', 'chan', 'time'};
                 cfg.feature_dimension = 2;
                 cfg.preprocess = 'zscore';
@@ -173,7 +175,7 @@ function mvpa_representation(subject, analyse, region)
                 cfg.dimension_names = {'samples', 'chan', 'time'};
                 cfg.feature_dimension = 2;
                 cfg.generalization_dimension = 3;
-                cfg.mvpa.preprocess = 'zscore';
+                cfg.preprocess = 'zscore';
 
                 [~, result{perm, i, 3}] = mv_classify_timextime(cfg, ...
                     train_when, Y_train(:, i), test_when, Y_test(:, i));
@@ -181,7 +183,7 @@ function mvpa_representation(subject, analyse, region)
         end
     end
     
-    for i=1:2
+    for i=1:length(cond)
         type = ["when", "where", "time"];
         for j=1:length(type)
             if isempty(result{1, i, j})
