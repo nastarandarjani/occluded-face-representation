@@ -111,40 +111,10 @@ function test_train(subject, region)
         y_test = y_test(~isnan(y_test(:, 1)), :);
         
         % average in 50ms time window
-        win = 13;
-        for tr = 1:size(train_when{1}, 1)
-            x = squeeze(train_when{1}(tr, :, :));
-            T = ones(length(x));
-            T = T - triu(T, floor(win./2)+1) - tril(T, ...
-                -floor(win./2)-1) > 0;
-            for in = 1:size(x, 1)
-                m = repmat(x(in, :), size(x, 2), 1);
-                x(in, :) = sum(T.* m, 2);
-            end
-            train_when{1}(tr, :, :) = x ./ win;
-        end
-        for tr = 1:size(train_when{2}, 1)
-            x = squeeze(train_when{2}(tr, :, :));
-            T = ones(length(x));
-            T = T - triu(T, floor(win./2)+1) - tril(T, ...
-                -floor(win./2)-1) > 0;
-            for in = 1:size(x, 1)
-                m = repmat(x(in, :), size(x, 2), 1);
-                x(in, :) = sum(T.* m, 2);
-            end
-            train_when{2}(tr, :, :) = x ./ win;
-        end
-        for tr = 1:size(test_when, 1)
-            x = squeeze(test_when(tr, :, :));
-            T = ones(length(x));
-            T = T - triu(T, floor(win./2)+1) - tril(T, ...
-                -floor(win./2)-1) > 0;
-            for in = 1:size(x, 1)
-                m = repmat(x(in, :), size(x, 2), 1);
-                x(in, :) = sum(T.* m, 2);
-            end
-            test_when(tr, :, :) = x ./ win;
-        end
+        win = 12;   % (12*1000ms)/256Hz ~= 47 ms
+        train_when{1} = movmean(train_when{1}, win, 3);
+        train_when{2} = movmean(train_when{2}, win, 3);
+        test_when = movmean(test_when, win, 3);
     
         cond = ["occluded", "occluder"];
         for c=1:2
@@ -161,7 +131,7 @@ function test_train(subject, region)
             cfg.dimension_names = {'samples', 'chan', 'time'};
 
             cfg.feature_dimension = 2;
-            cfg.mvpa.preprocess = 'zscore';
+            cfg.preprocess = 'zscore';
             [~, result{perm, c, 1}] = mv_classify(cfg, train_when{c}, ...
                 y_train{c}, test_when, y_test(:, c));
 
@@ -170,10 +140,6 @@ function test_train(subject, region)
                 train_when{c}, y_train{c}, test_when, y_test(:, c));
 
             cfg.generalization_dimension = [];
-            
-            
-            
-            
             cfg.neighbours = neighbours;
             cfg.feature_dimension = 3;
             [~, result{perm, c, 2}] = mv_classify(cfg, train_where{c}, ...
