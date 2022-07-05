@@ -49,12 +49,12 @@ EEG = eeg_checkset( EEG );
 EEG = pop_reref( EEG, [] );
 EEG = eeg_checkset( EEG );
 
-% high pass filter
-EEG = pop_eegfiltnew(EEG, 1, []);
-EEG = eeg_checkset( EEG );
-
 % low pass filter
 EEG = pop_eegfiltnew(EEG, [], 100);
+EEG = eeg_checkset( EEG );
+
+% line noise notch filter
+EEG = pop_eegfiltnew(EEG, 'locutoff',48,'hicutoff',52,'revfilt',1);
 EEG = eeg_checkset( EEG );
 
 % re-reference to average
@@ -62,11 +62,19 @@ EEG = pop_reref( EEG, [] );
 EEG = eeg_checkset( EEG );
 
 % % downsample
-% EEG = pop_resample(EEG, 250);
+% EEG = pop_resample(EEG, 256);
 % EEG = eeg_checkset(EEG);
+
+% epoch data
+EEG = pop_epoch( EEG, {'chan127'}, [-0.2 0.6], 'epochinfo', 'yes');
+EEG = eeg_checkset( EEG );
 
 % save dataset
 EEG = pop_saveset( EEG, 'filename',[sub, '.set'],'filepath', ...
-    '/home/nastaran/Desktop/data/preprocessed/mvpa_preprocessing/');
+    '/home/nastaran/Desktop/data/preprocessed/FC_preprocessing/');
 EEG = eeg_checkset( EEG );
+
+data = eeglab2fieldtrip(EEG, 'raw');
+save(['../data/preprocessed/FC_preprocessing/', sub, '.mat'], ...
+        'data', '-v7.3');
 end
