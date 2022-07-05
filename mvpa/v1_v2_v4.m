@@ -99,29 +99,9 @@ function v1_v2_v4(subject, analyse, region)
         y_test = y_test(~isnan(y_test(:, 1)), :);
 
         % average in 50ms time window
-        win = 13;
-        for tr = 1:size(train_when, 1)
-            x = squeeze(train_when(tr, :, :));
-            T = ones(length(x));
-            T = T - triu(T, floor(win./2)+1) - tril(T, ...
-                -floor(win./2)-1) > 0;
-            for in = 1:size(x, 1)
-                m = repmat(x(in, :), size(x, 2), 1);
-                x(in, :) = sum(T.* m, 2);
-            end
-            train_when(tr, :, :) = x ./ win;
-        end
-        for tr = 1:size(test_when, 1)
-            x = squeeze(test_when(tr, :, :));
-            T = ones(length(x));
-            T = T - triu(T, floor(win./2)+1) - tril(T, ...
-                -floor(win./2)-1) > 0;
-            for in = 1:size(x, 1)
-                m = repmat(x(in, :), size(x, 2), 1);
-                x(in, :) = sum(T.* m, 2);
-            end
-            test_when(tr, :, :) = x ./ win;
-        end
+        win = 12;   % (12*1000ms)/256Hz ~= 47 ms
+        train_when = movmean(train_when, win, 3);
+        test_when = movmean(test_when, win, 3);
 
         cond = ["v1", "v2", "v4"];
         for i=1:3
@@ -139,7 +119,7 @@ function v1_v2_v4(subject, analyse, region)
                 cfg.metric = {'kappa', 'f1', 'accuracy'};
                 cfg.dimension_names = {'samples', 'chan', 'time'};
                 cfg.feature_dimension = 2;
-                cfg.mvpa.preprocess = 'zscore';
+                cfg.preprocess = 'zscore';
 
                 [~, result{perm, i, 1}] = mv_classify(cfg, ...
                     train_when, y_train(:, i), test_when, y_test(:, i));
@@ -152,7 +132,7 @@ function v1_v2_v4(subject, analyse, region)
                 cfg.dimension_names = {'samples', 'chan', 'time'};
                 cfg.feature_dimension = 3;
                 cfg.neighbours = neighbours;
-                cfg.mvpa.preprocess = 'zscore';
+                cfg.preprocess = 'zscore';
 
                 [~, result{perm, i, 2}] = mv_classify(cfg, ...
                     train_where, y_train(:, i), test_where, y_test(:, i));
@@ -165,7 +145,7 @@ function v1_v2_v4(subject, analyse, region)
                 cfg.dimension_names = {'samples', 'chan', 'time'};
                 cfg.feature_dimension = 2;
                 cfg.generalization_dimension = 3;
-                cfg.mvpa.preprocess = 'zscore';
+                cfg.preprocess = 'zscore';
 
                 [~, result{perm, i, 3}] = mv_classify_timextime(cfg, ...
                     train_when, y_train(:, i), test_when, y_test(:, i));
