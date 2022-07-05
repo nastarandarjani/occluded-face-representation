@@ -2,16 +2,16 @@
 % p_value = zeros([126, 3, 206]);
 % for ch = 1:126
 %     fprintf(['loading data: ', num2str(ch), '\n']);
-%     load(['../data/result/glm/glm', num2str(ch), '.mat']);
+%     load(['../data/result/anov/', num2str(ch), '.mat']);
 %     fstatCh = cellfun(@(x)cell2mat(x(2:4, 6)),anov, 'UniformOutput',false);
 %     fstat(ch, :, :) = horzcat(fstatCh{:});
 %     p_value(ch, :, :) = horzcat(p{:});
 % end
-% save('../data/result/glm/fstat_p_value.mat', 'fstat', 'p_value');
+% save('../data/result/anov/fstat_p_value.mat', 'fstat', 'p_value');
 
 % amplitude = 1 + isFace + identity + meaningfulness + type + location
 %               + (1 | subject number)
-load('../data/result/glm/fstat_p_value.mat');
+load('../data/result/anov/fstat_p_value.mat');
 load('../data/preprocessed/mvpa_preprocessing/ica/sub1.mat');
 
 for i=1:3
@@ -45,5 +45,5 @@ for i=1:length(cond)
     set(gca, 'YGrid', 'off', 'XGrid', 'on');
     title(char(cond(i)));
     hold off
-    saveas(gcf, ['../data/result/glm/', char(cond(i)), '.jpg']);
+    saveas(gcf, ['../data/result/anov/', char(cond(i)), '.jpg']);
 end
