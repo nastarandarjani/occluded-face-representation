@@ -3,14 +3,12 @@ function [trl, event] = trialfun_(cfg)
 % Developed in MATLAB R2017a
 % see also: eeglab_to_fieldtrip
 %
+    event = cfg.event(~strcmp({cfg.event.value}, 'boundary'));
+    
+    EVsample = [event.sample]';
 
-    hdr = ft_read_header(cfg.headerfile);
-    event = ft_read_event(cfg.headerfile);
-
-    EVsample   = [event.sample]';
-
-    PreTrig   = round(0.2 * hdr.Fs);
-    PostTrig  = round(0.6 * hdr.Fs);
+    PreTrig = round(0.2 * cfg.hdr.Fs);
+    PostTrig = round(0.6 * cfg.hdr.Fs);
 
     begsample = EVsample - PreTrig;
     endsample = EVsample + PostTrig;

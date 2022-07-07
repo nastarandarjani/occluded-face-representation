@@ -11,12 +11,16 @@ function data = eeglab_to_fieldtrip(subject)
 % Developed in MATLAB R2017a
 %
 % see also: trialfun_
-
+    
+    filename = ['../data/preprocessed/mvpa_preprocessing/ica/', ...
+        subject, '.set'];
+        
     % epoching
     cfg = [];
-    cfg.dataset = ['../data/preprocessed/mvpa_preprocessing/', subject, ...
-        '.set'];
     cfg.trialfun = 'trialfun_';
+    cfg.hdr = ft_read_header(filename);
+    cfg.data = ft_read_data(filename, 'header', cfg.hdr);
+    cfg.event = ft_read_event(filename, 'header', cfg.hdr);
     cfg = ft_definetrial(cfg);
     
     % remove baseline
@@ -29,6 +33,6 @@ function data = eeglab_to_fieldtrip(subject)
     
     data = ft_preprocessing(cfg);
     
-    save(['../data/preprocessed/mvpa_preprocessing/', subject, '.mat'],...
-        '-v7.3');
+    save(['../data/preprocessed/mvpa_preprocessing/ica/', subject, ...
+        '.mat'], '-v7.3');
 end
