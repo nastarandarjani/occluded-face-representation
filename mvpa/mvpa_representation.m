@@ -40,6 +40,7 @@ function mvpa_representation(subject, analyse, region, time_point)
     data_where = ft_selectdata(cfg, data_when);
     data_where = data_where.trial;
     
+    data_when = data_when.trial;
     
     % prepare channel neighbours
     cfg = [];
