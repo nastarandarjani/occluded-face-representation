@@ -12,10 +12,10 @@ function mvpa_representation(subject, analyse, region, time_point)
     end
     
     % load data
-    data = load(['data/preprocessed/mvpa_preprocessing/ica/', ...
+    data = load(['../data/preprocessed/mvpa_preprocessing/ica/', ...
                 subject, '.mat']);
     data = data.data;
-    label_mat = load(['data/label/', subject, '.mat']);
+    label_mat = load(['../data/label/', subject, '.mat']);
     label_mat = label_mat.imageseq;
     time = data.time{1};
     
