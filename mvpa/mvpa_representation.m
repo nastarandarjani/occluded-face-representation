@@ -60,13 +60,17 @@ function mvpa_representation(subject, analyse, region, time_point)
 
         % select average of 50% images as train and rest as test data.
         [C, ~, ic] = unique(label_mat);
+        train_when = nan(191, length(chnl), length(time));
+        test_when = nan(191, length(chnl), length(time));
         train_where = nan(191, length(chnl));
         test_where = nan(191, length(chnl));
         for i=1:191
             seq = find(ic == i);
             avg_ind = seq(randperm(length(seq), 8));
+            train_when(i, :, :) = mean(data_when(avg_ind, :, :));
             train_where(i, :, :) = mean(data_where(avg_ind, :));
             avg_ind = seq(~ismember(seq, avg_ind));
+            test_when(i, :, :) = mean(data_when(avg_ind, :, :));
             test_where(i, :, :) = mean(data_where(avg_ind, :));
 
             % parse image name
@@ -83,13 +87,16 @@ function mvpa_representation(subject, analyse, region, time_point)
             end
         end
         ind = randperm(size(train_where, 1));
+        train_when = train_when(ind, :, :);
         train_where = train_where(ind, :, :);
         y_train = y_train(ind, :);
 
         % delete NaN labels
-        train_where = train_where(~isnan(y_train(:, 1)), :, :);
+        train_when = train_when(~isnan(y_test(:, 1)), :, :);
+        train_where = train_where(~isnan(y_train(:, 1)), :);
         y_train = y_train(~isnan(y_train(:, 1)), :);
 
+        test_when = test_when(~isnan(y_test(:, 1)), :);
         test_where = test_where(~isnan(y_test(:, 1)), :, :);
         y_test = y_test(~isnan(y_test(:, 1)), :);
         cond = ["occluded", "occluder"];
