@@ -93,11 +93,11 @@ function mvpa_representation(subject, analyse, region, time_point)
         y_train = y_train(ind, :);
 
         % delete NaN labels
-        train_when = train_when(~isnan(y_test(:, 1)), :, :);
-        train_where = train_where(~isnan(y_train(:, 1)), :);
+        train_when = train_when(~isnan(y_train(:, 1)), :, :);
+        train_where = train_where(~isnan(y_train(:, 1)), :, :);
         y_train = y_train(~isnan(y_train(:, 1)), :);
 
-        test_when = test_when(~isnan(y_test(:, 1)), :);
+        test_when = test_when(~isnan(y_test(:, 1)), :, :);
         test_where = test_where(~isnan(y_test(:, 1)), :, :);
         y_test = y_test(~isnan(y_test(:, 1)), :);
         cond = ["occluded", "occluder"];
