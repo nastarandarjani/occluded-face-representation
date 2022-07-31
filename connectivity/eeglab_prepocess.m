@@ -61,6 +61,8 @@ EEG = eeg_checkset( EEG );
 EEG = pop_reref( EEG, [] );
 EEG = eeg_checkset( EEG );
 
+pop_writebva(EEG,['/home/nastaran/Desktop/data/preprocessed/FC_preprocessing/', sub]);
+
 % % downsample
 % EEG = pop_resample(EEG, 256);
 % EEG = eeg_checkset(EEG);
