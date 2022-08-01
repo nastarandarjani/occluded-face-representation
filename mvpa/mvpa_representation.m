@@ -100,6 +100,13 @@ function mvpa_representation(subject, analyse, region, time_point)
         test_when = test_when(~isnan(y_test(:, 1)), :, :);
         test_where = test_where(~isnan(y_test(:, 1)), :, :);
         y_test = y_test(~isnan(y_test(:, 1)), :);
+        
+        % average in 50ms time window
+        win = 12;   % (12*1000ms)/256Hz ~= 47 ms
+        train_when = movmean(train_when, win, 3);
+        test_when = movmean(test_when, win, 3);
+        
+        
         cond = ["occluded", "occluder"];
         for i=1:2
             % set classifier
