@@ -64,7 +64,9 @@ function plv = plot_plv()
     f2 = mean(plv(:, :, :, f2_start:f2_end), 4);
     fb = mean(plv(:, :, :, fb_start:fb_end), 4);
     
+    file_name = ["delta", "theta", "alpha", "beta", "Lgamma", "Hgamma"];
     for f=1:6
+        FigH = figure('Position', get(0, 'Screensize'));
         figure(f);
         subplot(1, 3, 1)
         imagesc(squeeze(fb(f, :, :))');
@@ -99,6 +101,8 @@ function plv = plot_plv()
         axis('square');
         caxis([0, max([fb(:); f1(:); f2(:)])]);
         title('second peak connections');
+
+        saveas(FigH,['../data/result/granger/', char(file_name(f)), '.jpg']);
     end
     
     merged_plv = nan(6, 4, 4, 1201);
@@ -117,6 +121,7 @@ function plv = plot_plv()
     merged_f2 = mean(merged_plv(:, :, :, f2_start:f2_end), 4);
     merged_fb = mean(merged_plv(:, :, :, fb_start:fb_end), 4);
     
+    FigH = figure('Position', get(0, 'Screensize'));
     tiledlayout(6, 3, 'Padding', 'none', 'TileSpacing', 'compact'); 
     for f=1:6
         nexttile;
@@ -150,7 +155,9 @@ function plv = plot_plv()
             squeeze(max(merged_f2(f, :, :)))])]);
         title('second peak region connections');
     end
-    
+    saveas(FigH,['../data/result/granger/merged.jpg']);
+
+    FigH = figure('Position', get(0, 'Screensize'));
     for f=1:6
         subplot(2, 3, f)
         imagesc(squeeze(merged_f2(f, :, :) - merged_f1(f, :, :))');
@@ -161,7 +168,9 @@ function plv = plot_plv()
         caxis([min(min(merged_f2(f, :, :) - merged_f1(f, :, :))),...
             max(max(merged_f2(f, :, :) - merged_f1(f, :, :)))]);
     end
+    saveas(FigH,['../data/result/granger/diff.jpg']);
     
+    FigH = figure('Position', get(0, 'Screensize'));
     tiledlayout(6, 2, 'Padding', 'none', 'TileSpacing', 'compact'); 
     for f=1:6
         nexttile;
@@ -187,4 +196,5 @@ function plv = plot_plv()
             merged_f1(f, :, :) - merged_fb(f, :, :))))]);
         title('second peak region connections');
     end
+    saveas(FigH,['../data/result/granger/norm.jpg']);
 end
