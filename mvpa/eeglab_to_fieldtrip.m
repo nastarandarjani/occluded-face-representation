@@ -18,6 +18,7 @@ function data = eeglab_to_fieldtrip(subject)
     % epoching
     cfg = [];
     cfg.trialfun = 'trialfun_';
+    cfg.dataset = filename;
     cfg.hdr = ft_read_header(filename);
     cfg.data = ft_read_data(filename, 'header', cfg.hdr);
     cfg.event = ft_read_event(filename, 'header', cfg.hdr);
