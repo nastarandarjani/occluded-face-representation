@@ -1,3 +1,11 @@
+% This code select occluded face trials and epochs them to (-3, 3) seconds.
+% then with wavelete transform plots time-frequency power of each frequency band
+% in topoplot.
+%
+% Written by Nastaran Darjani 
+% Developed in MATLAB R2022a
+% 
+
 TFR = cell(11, 1);
 for subject = 1:11
     filename = ['../data/preprocessed/FC_preprocessing/sub', ...
